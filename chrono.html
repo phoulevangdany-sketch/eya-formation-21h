@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Le restaurant CHRONO — EYA Formation</title>
+<link rel="stylesheet" href="assets/eya.css">
+<style>
+  .plan { width: 100%; background: #fff; border: 2px solid var(--line); margin-bottom: 16px; }
+  .poste { display: flex; gap: 12px; background: #fff; border: 2px solid var(--line); padding: 12px 14px; margin-bottom: 10px; }
+  .poste .num { width: 30px; height: 30px; flex-shrink: 0; background: var(--orange); color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .poste .nom { font-weight: 800; color: var(--navy); }
+  .poste .obj { font-size: 13px; color: #6b6f7c; line-height: 1.4; }
+</style>
+</head>
+<body>
+<header>
+  <img src="assets/logo_eya.png" alt="EYA Formation">
+  <div><div class="t">Le restaurant « CHRONO »</div><div class="s">Séquence S1.2 · qui fait quoi, et comment l'info circule</div></div>
+</header>
+<main>
+  <h1>Le plan de CHRONO</h1>
+  <div class="sub">CHRONO est un restaurant fictif : il sert de support d'entraînement pendant les
+  trois jours. Voici ses postes et le chemin d'une commande, de la réserve jusqu'au client. On
+  s'en sert pour cartographier les flux et repérer où l'information passe — ou se perd.</div>
+  <div class="rule"></div>
+
+  <svg class="plan" viewBox="0 0 400 300" role="img" aria-label="Plan du restaurant CHRONO">
+    <rect x="0" y="0" width="400" height="300" fill="#F4F2ED"/>
+    <!-- réserve -->
+    <rect x="12" y="12" width="96" height="60" fill="#182040"/>
+    <text x="60" y="38" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle" font-family="Arial">RÉSERVE</text>
+    <text x="60" y="54" fill="#C9CDDC" font-size="9" text-anchor="middle" font-family="Arial">stock, livraisons</text>
+    <!-- prépa chaude -->
+    <rect x="12" y="92" width="118" height="70" fill="#fff" stroke="#182040" stroke-width="2"/>
+    <text x="71" y="120" fill="#182040" font-size="12" font-weight="bold" text-anchor="middle" font-family="Arial">PRÉPA CHAUDE</text>
+    <text x="71" y="136" fill="#6b6f7c" font-size="9" text-anchor="middle" font-family="Arial">cuisson, montage</text>
+    <!-- prépa froide -->
+    <rect x="12" y="182" width="118" height="66" fill="#fff" stroke="#182040" stroke-width="2"/>
+    <text x="71" y="210" fill="#182040" font-size="12" font-weight="bold" text-anchor="middle" font-family="Arial">PRÉPA FROIDE</text>
+    <text x="71" y="226" fill="#6b6f7c" font-size="9" text-anchor="middle" font-family="Arial">salades, sauces</text>
+    <!-- assemblage / passe -->
+    <rect x="152" y="112" width="96" height="80" fill="#C85038"/>
+    <text x="200" y="146" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle" font-family="Arial">ASSEMBLAGE</text>
+    <text x="200" y="162" fill="#fff" font-size="9" text-anchor="middle" font-family="Arial">la passe</text>
+    <!-- comptoir / caisse -->
+    <rect x="270" y="92" width="118" height="60" fill="#182040"/>
+    <text x="329" y="118" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle" font-family="Arial">COMPTOIR</text>
+    <text x="329" y="134" fill="#C9CDDC" font-size="9" text-anchor="middle" font-family="Arial">caisse, remise</text>
+    <!-- drive -->
+    <rect x="270" y="12" width="118" height="60" fill="#fff" stroke="#182040" stroke-width="2"/>
+    <text x="329" y="38" fill="#182040" font-size="12" font-weight="bold" text-anchor="middle" font-family="Arial">DRIVE</text>
+    <text x="329" y="54" fill="#6b6f7c" font-size="9" text-anchor="middle" font-family="Arial">commande + retrait</text>
+    <!-- salle -->
+    <rect x="152" y="212" width="236" height="76" fill="#fff" stroke="#182040" stroke-width="2"/>
+    <text x="270" y="245" fill="#182040" font-size="12" font-weight="bold" text-anchor="middle" font-family="Arial">SALLE</text>
+    <text x="270" y="261" fill="#6b6f7c" font-size="9" text-anchor="middle" font-family="Arial">clients sur place, bornes</text>
+    <!-- flux -->
+    <g stroke="#C85038" stroke-width="2.5" fill="none" marker-end="url(#a)">
+      <line x1="60" y1="72" x2="66" y2="88"/>
+      <line x1="130" y1="140" x2="148" y2="145"/>
+      <line x1="71" y1="182" x2="120" y2="160"/>
+      <line x1="248" y1="140" x2="266" y2="128"/>
+      <line x1="329" y1="92" x2="329" y2="76"/>
+      <line x1="270" y1="150" x2="250" y2="200"/>
+    </g>
+    <defs>
+      <marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="#C85038"/>
+      </marker>
+    </defs>
+  </svg>
+
+  <p class="sub" style="margin-top:0">Le chemin d'une commande : la <b>réserve</b> alimente les
+  deux préparations, qui envoient à l'<b>assemblage</b> (la passe), d'où part la remise au
+  <b>comptoir</b>, au <b>drive</b> ou en <b>salle</b>. Chaque flèche est un endroit où une
+  consigne doit passer entière.</p>
+
+  <h1 style="font-size:20px; margin-top:24px">Les postes</h1>
+  <div class="rule"></div>
+  <div class="poste"><div class="num">1</div><div><div class="nom">Réserve</div><div class="obj">Réception des livraisons, rangement en rotation (premier entré, premier sorti), suivi des ruptures. C'est ici que commence le coût matière.</div></div></div>
+  <div class="poste"><div class="num">2</div><div><div class="nom">Prépa chaude</div><div class="obj">Cuisson et montage des produits chauds. Respect des fiches techniques et des grammages. Le poste qui tient le rythme du rush.</div></div></div>
+  <div class="poste"><div class="num">3</div><div><div class="nom">Prépa froide</div><div class="obj">Salades, sauces, produits froids. Rotation et fraîcheur. Alimente l'assemblage sans casser la chaîne du froid.</div></div></div>
+  <div class="poste"><div class="num">4</div><div><div class="nom">Assemblage (la passe)</div><div class="obj">Le point de convergence : on rassemble, on contrôle la commande en quatre points, on envoie. Le cœur de la coordination.</div></div></div>
+  <div class="poste"><div class="num">5</div><div><div class="nom">Comptoir · Drive · Salle</div><div class="obj">La remise au client. Accueil, encaissement, gestion de l'attente et des réclamations. La vitrine de tout ce qui s'est passé derrière.</div></div></div>
+
+  <div class="explain" style="margin-top:18px"><b>À quoi ça sert en formation :</b> ce plan est le
+  décor commun des exercices — la simulation de rush, la répartition des postes, les jeux de rôle.
+  Quand on dit « CHRONO », tout le monde voit le même restaurant.</div>
+  <a class="btn ghost" href="index.html">Retour à l'accueil</a>
+</main>
+<footer>Support pédagogique — restaurant fictif, aucune donnée réelle. EYA FORMATION, nom commercial d'Académie Marvelous.</footer>
+</body>
+</html>

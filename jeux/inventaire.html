@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Compte le stock — EYA Formation</title>
+<link rel="stylesheet" href="../assets/eya.css">
+</head>
+<body>
+<header>
+  <img src="../assets/logo_eya.png" alt="EYA Formation">
+  <div><div class="t">Compte le stock</div><div class="s">Séquence S3.6 · on ne pilote pas des unités, on pilote des euros</div></div>
+</header>
+<main id="jeu">
+  <h1>Quel écart coûte le plus cher ?</h1>
+  <div class="sub">À l'inventaire, deux produits sont en écart entre le stock théorique et le stock
+  compté. On vous donne l'écart en unités et le prix unitaire. Lequel coûte le plus cher au
+  restaurant ? Attention : ce n'est pas toujours celui qui manque le plus en quantité.</div>
+  <div class="rule"></div>
+  <div class="card" style="border-color:var(--orange)">
+    <div class="k">La règle</div>
+    <div class="t">Écart en euros = écart en unités × prix unitaire</div>
+    <div class="d">Six steaks manquants coûtent plus cher que douze pains. On pilote la VALEUR,
+    pas le nombre. Et un écart positif n'est pas une bonne nouvelle : du stock ne se crée pas
+    tout seul, c'est une erreur quelque part.</div>
+  </div>
+  <button class="btn" id="start">▶ Démarrer</button>
+</main>
+<footer>Entraînement individuel — le score n'est enregistré nulle part. Données du restaurant fictif « CHRONO ».</footer>
+<script>
+/* Produits et prix repris du MODELE_INVENTAIRE / EXERCICE_INVENTAIRE de CHRONO.
+   Chaque manche : 2 produits avec un écart en unités ; la bonne réponse = valeur absolue
+   (unités × prix) la plus élevée. Le piège : gros écart sur produit bon marché. */
+const PRODUITS = [
+  {nom: "Steaks hachés", ecart: -6, prix: 0.78},
+  {nom: "Pains à burger", ecart: -12, prix: 0.22},
+  {nom: "Boissons 33 cl", ecart: -12, prix: 0.28},
+  {nom: "Frites (sachets 2,5 kg)", ecart: -1, prix: 4.10},
+  {nom: "Salade (kg)", ecart: -0.6, prix: 4.00},
+  {nom: "Sauce maison (kg)", ecart: -0.2, prix: 5.00},
+  {nom: "Fromage en tranches", ecart: +8, prix: 0.13},
+  {nom: "Tomates (kg)", ecart: -2, prix: 3.00},
+];
+function valeur(p) { return Math.abs(p.ecart * p.prix); }
+function euros(x) { return x.toFixed(2).replace(".", ",") + " €"; }
+function unites(p) {
+  const n = Math.abs(p.ecart);
+  const signe = p.ecart > 0 ? "+" : "−";
+  return `${signe}${n.toString().replace(".", ",")}`;
+}
+const main = document.getElementById("jeu");
+let deck, score, bonnes, total;
+
+document.getElementById("start").addEventListener("click", demarrer);
+
+function paires() {
+  // toutes les paires, mélangées, en évitant les valeurs quasi égales (choix ambigu)
+  const out = [];
+  for (let i = 0; i < PRODUITS.length; i++)
+    for (let j = i + 1; j < PRODUITS.length; j++)
+      if (Math.abs(valeur(PRODUITS[i]) - valeur(PRODUITS[j])) > 0.3)
+        out.push([PRODUITS[i], PRODUITS[j]]);
+  return out.sort(() => Math.random() - 0.5).slice(0, 8);
+}
+
+function demarrer() {
+  deck = paires();
+  score = 0; bonnes = 0; total = 0;
+  question();
+}
+
+function question() {
+  if (!deck.length) { fin(); return; }
+  const [a, b] = deck.pop();
+  const paire = [a, b].sort(() => Math.random() - 0.5);
+  total++;
+  main.innerHTML = `
+    <div class="qnum">Manche ${total} / ${8}</div>
+    <div class="qtext">Lequel de ces deux écarts coûte le plus cher ?</div>
+    <div id="cartes"></div>
+    <div id="fb" style="margin-top:12px"></div>
+  `;
+  const box = document.getElementById("cartes");
+  paire.forEach((p) => {
+    const btn = document.createElement("button");
+    btn.className = "opt";
+    btn.innerHTML = `<b style="color:var(--navy)">${p.nom}</b><br>
+      <span style="font-size:13px; color:#6b6f7c">écart : ${unites(p)} unité(s) · prix : ${euros(p.prix)}/u</span>`;
+    btn.addEventListener("click", () => repondre(p, paire, btn));
+    box.appendChild(btn);
+  });
+}
+
+function repondre(choix, paire, btn) {
+  const gagnant = valeur(paire[0]) > valeur(paire[1]) ? paire[0] : paire[1];
+  const ok = choix === gagnant;
+  if (ok) { score += 2; bonnes++; }
+  document.querySelectorAll("#cartes .opt").forEach((b, i) => {
+    if (paire[i] === gagnant) b.classList.add("good");
+    else if (b === btn && !ok) b.classList.add("bad");
+    else b.classList.add("dim");
+    b.disabled = true;
+  });
+  document.getElementById("fb").innerHTML = `
+    <div class="explain"><b>${ok ? "✔ +2 pts" : "✘"}</b>
+    ${paire[0].nom} : ${unites(paire[0])} × ${euros(paire[0].prix)} = <b>${euros(valeur(paire[0]))}</b>.
+    ${paire[1].nom} : ${unites(paire[1])} × ${euros(paire[1].prix)} = <b>${euros(valeur(paire[1]))}</b>.
+    C'est <b>${gagnant.nom}</b> qui coûte le plus, même s'il n'est pas celui qui manque le plus en nombre.</div>
+    <button class="btn" id="suiv">Manche suivante</button>`;
+  document.getElementById("suiv").addEventListener("click", question);
+}
+
+function fin() {
+  const pct = total ? Math.round((bonnes / total) * 100) : 0;
+  let msg;
+  if (pct >= 80) msg = "Vous raisonnez en euros. C'est exactement ce qu'un inventaire sert à voir.";
+  else if (pct >= 60) msg = "Bonne base — le réflexe à ancrer : toujours multiplier par le prix avant de conclure.";
+  else msg = "Rejouez : un petit écart sur un produit cher coûte plus qu'un gros écart sur un produit bon marché.";
+  main.innerHTML = `
+    <div class="qnum">Fin</div>
+    <div class="score-big">${score}<span> pts</span></div>
+    <div class="qtext">${bonnes}/${total} bons arbitrages (${pct} %)</div>
+    <div class="explain">${msg}</div>
+    <button class="btn" onclick="location.reload()">Rejouer</button>
+    <a class="btn ghost" style="margin-left:10px" href="../index.html">Accueil</a>
+  `;
+}
+</script>
+</body>
+</html>

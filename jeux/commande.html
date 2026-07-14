@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Repère l'erreur de commande — EYA Formation</title>
+<link rel="stylesheet" href="../assets/eya.css">
+</head>
+<body>
+<header>
+  <img src="../assets/logo_eya.png" alt="EYA Formation">
+  <div><div class="t">Repère l'erreur de commande</div><div class="s">Séquence S1.8 · le contrôle en 4 points</div></div>
+</header>
+<main id="jeu">
+  <h1>Le ticket dit une chose. Le plateau en dit une autre ?</h1>
+  <div class="sub">Le ticket de commande apparaît, puis le plateau préparé. Appliquez la méthode
+  de contrôle en quatre points : le bon produit, la bonne quantité, les bonnes options, rien en
+  trop. Repérez l'écart — ou validez si tout est conforme. Dix secondes par commande.</div>
+  <div class="rule"></div>
+  <div class="card" style="border-color:var(--orange)">
+    <div class="k">La méthode en 4 points</div>
+    <div class="t">Produit · Quantité · Options · Rien en trop</div>
+    <div class="d">On ne relit pas « en gros » : on vérifie quatre choses, dans l'ordre, à chaque
+    commande. Une erreur de commande, c'est un client mécontent ET un produit jeté.</div>
+  </div>
+  <button class="btn" id="start">▶ Démarrer</button>
+</main>
+<footer>Entraînement individuel — le score n'est enregistré nulle part. Restaurant fictif « CHRONO ».</footer>
+<script>
+/* Chaque cas : la commande (ce qui est demandé) + le plateau (ce qui est préparé) + le point
+   fautif (ou null = conforme). L'apprenant clique le point où est l'écart. Données CHRONO. */
+const CAS = [
+  {cmd: ["1 menu Classique", "Frites moyennes", "1 soda"],
+   plat: ["1 burger Classique", "Frites moyennes", "1 soda"],
+   faute: "produit", why: "Un MENU, pas un burger seul : il manque un élément. Contrôle « produit »."},
+  {cmd: ["2 burgers Classique", "SANS oignons (allergie)", "à emporter"],
+   plat: ["2 burgers Classique", "avec oignons", "à emporter"],
+   faute: "options", why: "« Sans oignons » pour allergie : ici c'est monté AVEC. Contrôle « options » — le plus grave, c'est une allergie."},
+  {cmd: ["3 menus maxi", "3 frites", "3 sodas"],
+   plat: ["3 menus maxi", "2 frites", "3 sodas"],
+   faute: "quantité", why: "Trois menus mais deux frites seulement. Contrôle « quantité »."},
+  {cmd: ["1 burger simple", "1 eau"],
+   plat: ["1 burger simple", "1 eau"],
+   faute: null, why: "Rien à signaler : produit, quantité, options, rien en trop. On envoie."},
+  {cmd: ["1 menu enfant", "compote", "eau"],
+   plat: ["1 menu enfant", "compote", "eau", "+ 1 sauce barbecue"],
+   faute: "rien en trop", why: "Une sauce en plus non commandée : c'est une perte sèche. Contrôle « rien en trop »."},
+  {cmd: ["2 wraps poulet", "1 grande frite", "2 sodas"],
+   plat: ["2 wraps poulet", "1 grande frite", "2 sodas"],
+   faute: null, why: "Conforme sur les quatre points. On envoie."},
+  {cmd: ["1 menu Classique", "boisson SANS glaçons"],
+   plat: ["1 menu Classique", "boisson avec glaçons"],
+   faute: "options", why: "« Sans glaçons » demandé, servi avec. Contrôle « options » — un détail, mais c'est ce que le client a demandé."},
+  {cmd: ["4 burgers Classique", "à emporter"],
+   plat: ["3 burgers Classique", "à emporter"],
+   faute: "quantité", why: "Quatre commandés, trois préparés. Contrôle « quantité » — l'erreur la plus fréquente en rush."},
+  {cmd: ["1 menu végé", "frites", "soda"],
+   plat: ["1 menu Classique", "frites", "soda"],
+   faute: "produit", why: "Menu végé demandé, Classique préparé : mauvais produit. Contrôle « produit »."},
+  {cmd: ["2 menus maxi", "SANS sauce", "2 sodas"],
+   plat: ["2 menus maxi", "SANS sauce", "2 sodas"],
+   faute: null, why: "Conforme — même la demande « sans sauce » est respectée. On envoie."},
+];
+const POINTS = [
+  ["produit", "Le bon produit ?"],
+  ["quantité", "La bonne quantité ?"],
+  ["options", "Les bonnes options ?"],
+  ["rien en trop", "Rien en trop ?"],
+];
+const DUREE = 10;
+const main = document.getElementById("jeu");
+let deck, score, bonnes, total, tQ, timer, cas;
+
+document.getElementById("start").addEventListener("click", demarrer);
+
+function demarrer() {
+  deck = [...CAS].sort(() => Math.random() - 0.5);
+  score = 0; bonnes = 0; total = 0;
+  question();
+}
+
+function ligne(arr, plat) {
+  return arr.map((x) => {
+    const enTrop = plat && !cas.cmd.some((c) => c.toLowerCase() === x.toLowerCase()) &&
+                   x.startsWith("+");
+    return `<div style="padding:3px 0; ${enTrop ? 'color:var(--orange); font-weight:700' : ''}">${x}</div>`;
+  }).join("");
+}
+
+function question() {
+  if (!deck.length) { fin(); return; }
+  cas = deck.pop();
+  total++;
+  tQ = DUREE;
+  main.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center">
+      <div class="qnum">Commande ${total} / ${CAS.length}</div>
+      <div class="qnum" id="tlbl">${tQ} s</div>
+    </div>
+    <div class="rush-timer"><i id="qbar" style="width:100%"></i></div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px">
+      <div style="background:#fff; border:2px solid var(--line); padding:12px">
+        <div class="k" style="color:var(--navy)">LE TICKET</div>${ligne(cas.cmd)}
+      </div>
+      <div style="background:var(--navy); color:#fff; padding:12px">
+        <div class="k">LE PLATEAU</div>${ligne(cas.plat, true)}
+      </div>
+    </div>
+    <div class="quad">
+      ${POINTS.map((p) => `<button data-p="${p[0]}">${p[1]}</button>`).join("")}
+    </div>
+    <button class="opt" data-p="ok" style="text-align:center; font-weight:800; color:var(--ok); border-color:var(--ok); margin-top:8px">TOUT EST CONFORME — j'envoie</button>
+    <div id="fb" style="margin-top:12px"></div>
+  `;
+  main.querySelectorAll("[data-p]").forEach((b) =>
+    b.addEventListener("click", () => repondre(b.dataset.p, b)));
+  clearInterval(timer);
+  timer = setInterval(() => {
+    tQ--;
+    document.getElementById("qbar").style.width = (tQ / DUREE * 100) + "%";
+    document.getElementById("tlbl").textContent = tQ + " s";
+    if (tQ <= 0) { clearInterval(timer); repondre(null, null); }
+  }, 1000);
+}
+
+function repondre(choix, btn) {
+  clearInterval(timer);
+  const attendu = cas.faute === null ? "ok" : cas.faute;
+  const ok = choix === attendu;
+  if (ok) { score += 2; bonnes++; }
+  main.querySelectorAll("[data-p]").forEach((b) => {
+    if (b.dataset.p === attendu) b.classList.add(b.classList.contains("opt") ? "good" : "pick-good");
+    else if (b === btn && !ok) b.classList.add(b.classList.contains("opt") ? "bad" : "pick-bad");
+    b.disabled = true;
+  });
+  const entete = choix === null ? "⏱ Trop tard — en rush, une commande non contrôlée part quand même."
+               : ok ? "✔ +2 pts" : "✘ Raté.";
+  document.getElementById("fb").innerHTML =
+    `<div class="explain"><b>${entete}</b> ${cas.why}</div>`;
+  setTimeout(question, 1900);
+}
+
+function fin() {
+  const pct = total ? Math.round((bonnes / total) * 100) : 0;
+  let msg;
+  if (pct >= 80) msg = "Contrôle sûr. Les quatre points sont un réflexe, plus une checklist.";
+  else if (pct >= 60) msg = "Bonne base — l'écart qui échappe le plus, c'est « rien en trop » et les options.";
+  else msg = "Rejouez : à chaque commande, les quatre points DANS L'ORDRE, sans en sauter un.";
+  main.innerHTML = `
+    <div class="qnum">Fin</div>
+    <div class="score-big">${score}<span> pts</span></div>
+    <div class="qtext">${bonnes}/${total} commandes bien contrôlées (${pct} %)</div>
+    <div class="explain">${msg}</div>
+    <button class="btn" onclick="location.reload()">Rejouer</button>
+    <a class="btn ghost" style="margin-left:10px" href="../index.html">Accueil</a>
+  `;
+}
+</script>
+</body>
+</html>

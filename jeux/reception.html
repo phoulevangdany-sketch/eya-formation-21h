@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Range la livraison — EYA Formation</title>
+<link rel="stylesheet" href="../assets/eya.css">
+</head>
+<body>
+<header>
+  <img src="../assets/logo_eya.png" alt="EYA Formation">
+  <div><div class="t">Range la livraison</div><div class="s">Séquence S3.5 · premier entré, premier sorti</div></div>
+</header>
+<main id="jeu">
+  <h1>La livraison arrive. Lequel part en premier ?</h1>
+  <div class="sub">Pour chaque produit, plusieurs lots sont en stock avec des dates différentes.
+  La règle : premier entré, premier sorti — on utilise le plus ancien d'abord, sinon il périme et
+  part à la poubelle. Choisissez le lot à utiliser en premier. Attention : le lot livré aujourd'hui
+  se range DERRIÈRE, pas devant.</div>
+  <div class="rule"></div>
+  <div class="card" style="border-color:var(--orange)">
+    <div class="k">La règle — PEPS</div>
+    <div class="t">Le plus ancien devant, toujours</div>
+    <div class="d">« Premier entré, premier sorti. » À la réception : les nouveaux lots vont
+    DERRIÈRE les anciens. Une rotation ratée, c'est de la perte inconnue qu'on découvre à
+    l'inventaire — la plus chère.</div>
+  </div>
+  <button class="btn" id="start">▶ Démarrer</button>
+</main>
+<footer>Entraînement individuel — le score n'est enregistré nulle part. Restaurant fictif « CHRONO ».</footer>
+<script>
+/* Chaque manche : un produit, 3 lots avec des dates. Le bon choix = le plus ancien (DLC la plus
+   proche). Le lot « livré aujourd'hui » est un piège : il se range derrière. Dates fictives. */
+const MANCHES = [
+  {produit: "Pains à burger", lots: [
+    {label: "Lot A — reçu il y a 3 jours, à utiliser avant le 12", j: 12},
+    {label: "Lot B — reçu aujourd'hui, à utiliser avant le 18", j: 18},
+    {label: "Lot C — reçu hier, à utiliser avant le 15", j: 15}]},
+  {produit: "Steaks hachés surgelés", lots: [
+    {label: "Lot A — livraison du jour, DLC dans 4 mois", j: 120},
+    {label: "Lot B — au congélateur depuis 2 mois, DLC dans 2 mois", j: 60},
+    {label: "Lot C — arrivé la semaine dernière, DLC dans 3 mois", j: 90}]},
+  {produit: "Salade en sachet", lots: [
+    {label: "Lot A — à consommer avant demain", j: 1},
+    {label: "Lot B — à consommer avant le 20", j: 20},
+    {label: "Lot C — livré ce matin, à consommer avant le 25", j: 25}]},
+  {produit: "Boissons 33 cl", lots: [
+    {label: "Lot A — reçu aujourd'hui, DLC dans 8 mois", j: 240},
+    {label: "Lot B — en réserve, DLC dans 5 mois", j: 150},
+    {label: "Lot C — en réserve, DLC dans 6 mois", j: 180}]},
+  {produit: "Sauce maison (frais)", lots: [
+    {label: "Lot A — préparé aujourd'hui", j: 5},
+    {label: "Lot B — préparé avant-hier, à finir sous 24 h", j: 1},
+    {label: "Lot C — préparé hier", j: 3}]},
+  {produit: "Fromage en tranches", lots: [
+    {label: "Lot A — DLC le 22", j: 22},
+    {label: "Lot B — livré ce matin, DLC le 30", j: 30},
+    {label: "Lot C — DLC le 14", j: 14}]},
+];
+const main = document.getElementById("jeu");
+let deck, score, bonnes, total, manche;
+
+document.getElementById("start").addEventListener("click", demarrer);
+
+function demarrer() {
+  deck = [...MANCHES].sort(() => Math.random() - 0.5);
+  score = 0; bonnes = 0; total = 0;
+  manche = null;
+  question();
+}
+
+function question() {
+  if (!deck.length) { fin(); return; }
+  manche = deck.pop();
+  total++;
+  const lots = [...manche.lots].sort(() => Math.random() - 0.5);
+  main.innerHTML = `
+    <div class="qnum">Produit ${total} / ${MANCHES.length}</div>
+    <div class="qtext">${manche.produit}<br><span style="font-size:14px; font-weight:400; color:#6b6f7c">Lequel utilisez-vous en premier ?</span></div>
+    <div id="lots"></div>
+    <div id="fb" style="margin-top:12px"></div>
+  `;
+  const box = document.getElementById("lots");
+  lots.forEach((l) => {
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.textContent = l.label;
+    b.addEventListener("click", () => repondre(l, b, lots));
+    box.appendChild(b);
+  });
+}
+
+function repondre(choix, btn, lots) {
+  const min = Math.min(...lots.map((l) => l.j));
+  const ok = choix.j === min;
+  if (ok) { score += 2; bonnes++; }
+  document.querySelectorAll("#lots .opt").forEach((b, i) => {
+    if (lots[i].j === min) b.classList.add("good");
+    else if (b === btn && !ok) b.classList.add("bad");
+    else b.classList.add("dim");
+    b.disabled = true;
+  });
+  const bon = lots.find((l) => l.j === min);
+  document.getElementById("fb").innerHTML = `
+    <div class="explain"><b>${ok ? "✔ +2 pts" : "✘ Le plus ancien d'abord."}</b>
+    On utilise « ${bon.label.split(" —")[0]} » en premier : c'est la date la plus proche.
+    ${ok ? "" : "Le piège : le lot livré aujourd'hui se range DERRIÈRE, pas devant."}</div>
+    <button class="btn" id="suiv">Produit suivant</button>`;
+  document.getElementById("suiv").addEventListener("click", question);
+}
+
+function fin() {
+  const pct = total ? Math.round((bonnes / total) * 100) : 0;
+  let msg;
+  if (pct >= 80) msg = "Rotation maîtrisée. Le plus ancien devant, les nouveaux derrière.";
+  else if (pct >= 60) msg = "Bonne base — méfiez-vous du lot du jour : il ne part jamais en premier.";
+  else msg = "Rejouez : à la réception, on lit la date et on range le neuf DERRIÈRE l'ancien.";
+  main.innerHTML = `
+    <div class="qnum">Fin</div>
+    <div class="score-big">${score}<span> pts</span></div>
+    <div class="qtext">${bonnes}/${total} rotations correctes (${pct} %)</div>
+    <div class="explain">${msg}</div>
+    <button class="btn" onclick="location.reload()">Rejouer</button>
+    <a class="btn ghost" style="margin-left:10px" href="../index.html">Accueil</a>
+  `;
+}
+</script>
+</body>
+</html>

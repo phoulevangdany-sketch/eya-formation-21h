@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>La consigne en chaîne — EYA Formation</title>
+<link rel="stylesheet" href="../assets/eya.css">
+</head>
+<body>
+<header>
+  <img src="../assets/logo_eya.png" alt="EYA Formation">
+  <div><div class="t">La consigne en chaîne</div><div class="s">Séquence S1.5 · transmettre sans rien perdre</div></div>
+</header>
+<main id="jeu">
+  <h1>Ce qui entre doit ressortir entier</h1>
+  <div class="sub">Le formateur projette. Un participant lit une consigne pendant huit secondes,
+  puis elle disparaît : il la transmet à son voisin, de bouche à oreille, jusqu'au bout de la
+  chaîne. Le dernier la répète à voix haute — et on compare. C'est là qu'on voit ce qui se perd :
+  un chiffre, une condition, un nom.</div>
+  <div class="rule"></div>
+  <div class="card" style="border-color:var(--orange)">
+    <div class="k">La méthode — à garder en tête</div>
+    <div class="t">Contexte · Consigne · Contrôle</div>
+    <div class="d">Le contexte (pourquoi, maintenant), la consigne (quoi, qui, quand, comment),
+    le contrôle (« tu me redis ? »). Une consigne sans accusé de réception n'est pas une
+    consigne : c'est un vœu.</div>
+  </div>
+  <p class="sub" style="margin-top:6px">Choisissez la difficulté, puis tirez une consigne.</p>
+  <div style="display:flex; gap:8px; flex-wrap:wrap">
+    <button class="btn ghost" data-niv="0">Courte</button>
+    <button class="btn ghost" data-niv="1">Moyenne</button>
+    <button class="btn" data-niv="2">Longue</button>
+  </div>
+</main>
+<footer>Outil d'animation — aucune donnée collectée. Restaurant fictif « CHRONO ».</footer>
+<script>
+/* Consignes graduées. Plus c'est long, plus il y a de détails précis qui se perdent en chaîne :
+   des chiffres, des conditions, des noms de produits. Toutes situées dans le restaurant CHRONO. */
+const CONSIGNES = {
+  0: [
+    "Préviens la cuisine : plus de sauce barbecue au comptoir, on passe à la sauce maison.",
+    "Dis à Marc de monter deux menus enfant sans cornichon pour la table près de la vitre.",
+    "Le drive attend depuis six minutes : passe leur commande devant, c'est un menu du midi.",
+    "Descends un bac de steaks du congélateur, on tombe à cinq pièces au chaud.",
+    "La caisse deux est en panne : oriente les clients vers la borne et la caisse un.",
+  ],
+  1: [
+    "Pour la commande douze : un menu maxi avec des frites SANS SEL et un soda light, plus un burger simple à emporter. Le client est pressé, il a un train.",
+    "Quand tu passes en réserve : remonte trois sachets de frites et deux boîtes de pains, et note qu'il ne reste qu'un bidon d'huile — préviens le responsable avant la fermeture.",
+    "Le groupe de la table du fond attend cinq menus : trois maxi, deux normaux, dont un SANS OIGNONS pour une allergie. Les boissons arrivent en premier, ils commencent à s'impatienter.",
+    "À l'ouverture demain : la livraison passe à sept heures et non huit, préviens l'équipe du matin, et sors les pains à l'avance parce qu'il fait froid et qu'ils décongèlent lentement.",
+  ],
+  2: [
+    "Consigne pour le rush de midi : on ouvre une deuxième caisse à onze heures quarante-cinq, Léa passe au comptoir, Marc reste en production. On garde vingt steaks d'avance au chaud, pas plus, sinon on jette. Le drive prioritaire à partir de midi et quart, et si la file dépasse six personnes, un équipier prend les commandes à la borne avec une tablette. Tout le monde a compris ?",
+    "Consigne fournisseur et stock : la livraison de demain arrive à sept heures trente, il faut deux personnes pour la réception. On vérifie les dates sur les boissons — le dernier lot avait une date courte — et on range en premier entré premier sorti : les anciens devant. On signale toute rupture au responsable AVANT dix heures, et on note les casses sur la fiche de suivi des pertes, pas sur un bout de papier.",
+    "Consigne de fermeture : la caisse se compte à deux, on note l'écart même s'il est de dix centimes. La zone de production se nettoie AVANT le comptoir, les huiles se filtrent seulement quand elles ont refroidi. On sort les invendus du chaud, on les compte, on les note en pertes connues. Dernier point : on prépare la mise en place du matin — pains sortis, sauces remplies — pour que l'équipe d'ouverture ne parte pas en retard.",
+  ],
+};
+const NIVEAU = ["COURTE", "MOYENNE", "LONGUE"];
+const NIV_CLASS = ["vert", "orange", "rouge"];
+const main = document.getElementById("jeu");
+let piles = {0: [], 1: [], 2: []};
+
+document.querySelectorAll("[data-niv]").forEach((b) =>
+  b.addEventListener("click", () => tirer(+b.dataset.niv)));
+
+function tirer(niv) {
+  if (!piles[niv].length) piles[niv] = [...CONSIGNES[niv]].sort(() => Math.random() - 0.5);
+  const texte = piles[niv].pop();
+  ecran(niv, texte);
+}
+
+function ecran(niv, texte) {
+  main.innerHTML = `
+    <div class="qnum">Consigne tirée</div>
+    <div style="text-align:center; margin:6px 0 14px">
+      <span class="badge ${NIV_CLASS[niv]}">NIVEAU ${NIVEAU[niv]}</span>
+    </div>
+    <div class="rush-timer"><i id="rbar" style="width:100%"></i></div>
+    <div class="rush-situation" id="txt">${texte}</div>
+    <div id="ctrl"></div>
+  `;
+  // La consigne reste visible 8 secondes, puis se masque : le lecteur doit la transmettre de mémoire.
+  let t = 8;
+  const bar = document.getElementById("rbar");
+  const tick = setInterval(() => {
+    t--;
+    bar.style.width = (t / 8 * 100) + "%";
+    if (t <= 0) {
+      clearInterval(tick);
+      document.getElementById("txt").innerHTML =
+        "<span style='opacity:.5'>Consigne masquée — à transmettre de mémoire, en chaîne.</span>";
+      document.getElementById("ctrl").innerHTML = `
+        <button class="btn" id="revoir">Révéler pour comparer</button>
+        <button class="btn secondary" style="margin-left:8px" id="suiv">Tirer une autre consigne</button>
+        <div class="explain" style="margin-top:16px"><b>Le débriefing :</b> qu'est-ce qui a
+        disparu en route ? Presque toujours un chiffre, une condition (« sans sel »,
+        « avant dix heures ») ou un ordre de priorité. C'est exactement ce qui coûte cher en
+        service. La parade : faire reformuler — « tu me redis ? » — à chaque maillon.</div>`;
+      document.getElementById("revoir").addEventListener("click", () => {
+        document.getElementById("txt").innerHTML = texte;
+        document.getElementById("txt").style.opacity = 1;
+      });
+      document.getElementById("suiv").addEventListener("click", () => tirer(niv));
+    }
+  }, 1000);
+}
+</script>
+</body>
+</html>
