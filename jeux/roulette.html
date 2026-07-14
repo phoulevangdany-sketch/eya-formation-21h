@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Roulette des situations — EYA Formation</title>
+<link rel="stylesheet" href="../assets/eya.css">
+</head>
+<body>
+<header>
+  <img src="../assets/logo_eya.png" alt="EYA Formation">
+  <div><div class="t">La roulette des situations</div><div class="s">Jeux de rôle · simulation de rush</div></div>
+</header>
+<main>
+  <h1>Qui tire quoi ?</h1>
+  <div class="sub">Le formateur projette cette page. Un participant appuie — le sort décide.
+  Règle absolue : on ne rejoue jamais un conflit réel du groupe.</div>
+  <div class="rule"></div>
+
+  <div id="carte" class="wheel-card">Appuyez sur un bouton pour tirer une carte.</div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
+    <button class="btn" id="btn-com">🎭 Situation de communication</button>
+    <button class="btn secondary" id="btn-alea">⚡ Aléa de rush (S1.7)</button>
+    <button class="btn ghost" id="btn-cmd">🧾 Commande (simulation)</button>
+  </div>
+  <div class="sub" style="margin-top:14px" id="compteur"></div>
+</main>
+<footer>Séquences S2.3 (jeux de rôle) et S1.7 (simulation de rush) — outil d'animation, aucune donnée collectée</footer>
+<script>
+/* Cartes : mêmes contenus que CARTES_SITUATIONS_COMMUNICATION.docx (20 cartes graduées)
+   et que le scénario de la simulation CHRONO (aléas + commandes). */
+const SITUATIONS = [
+  ["vert", "Un collègue te demande où sont les sacs de livraison, pendant que tu montes trois burgers."],
+  ["vert", "Le comptoir t'annonce une commande sans oignons alors que tu l'as déjà montée."],
+  ["vert", "Un équipier nouveau te demande comment on lance une cuisson de frites, en plein coup de feu."],
+  ["vert", "Ton responsable te demande le nombre de commandes en attente, tu es au four."],
+  ["vert", "Un livreur attend et te demande si sa commande est prête. Elle ne l'est pas."],
+  ["orange", "Deux personnes te parlent en même temps : le comptoir réclame un burger, la livraison réclame deux menus."],
+  ["orange", "Le four vient de tomber en panne. Tu dois prévenir le comptoir sans affoler la file."],
+  ["orange", "Tu constates une rupture de steaks en plein service. Tu dois le dire à ton responsable qui est avec un client."],
+  ["orange", "Un collègue te donne une consigne que tu sais fausse. Il y a du monde qui écoute."],
+  ["orange", "Tu es en retard sur trois commandes et le comptoir te met la pression toutes les trente secondes."],
+  ["orange", "Tu dois demander à un collègue de changer de poste alors qu'il vient de s'installer."],
+  ["orange", "La musique et la hotte couvrent ta voix : tu dois faire passer une info importante."],
+  ["rouge", "Un collègue te répond sèchement devant un client. Tu dois continuer le service."],
+  ["rouge", "Tu dois annoncer à la file d'attente que le temps est monté à vingt minutes."],
+  ["rouge", "Ton responsable te reproche une erreur qui n'est pas la tienne, en plein rush."],
+  ["rouge", "Un équipier fait la même erreur pour la troisième fois aujourd'hui. Tu dois lui en parler."],
+  ["rouge", "Tu vois un collègue ne pas respecter une consigne de sécurité. Il est plus ancien que toi."],
+  ["rouge", "Deux collègues se disputent devant toi pendant le service."],
+  ["rouge", "Tu dois refuser une demande d'un collègue parce que c'est impossible maintenant."],
+  ["rouge", "Tu es débordé et tu dois demander de l'aide alors que tout le monde est déjà débordé."],
+];
+const ALEAS = [
+  "⚡ RUPTURE PRODUIT — plus de steaks ! Annonce et adaptation immédiates.",
+  "⚡ COMMANDE ERRONÉE — le client au comptoir revient : il manque un menu.",
+  "⚡ AFFLUX LIVRAISON — trois commandes livraison tombent en même temps.",
+  "⚡ ÉQUIPIER ABSENT — le poste assemblage se retrouve seul pendant 2 minutes.",
+  "⚡ CLIENT PRESSÉ — un client annonce qu'il a un train dans 10 minutes.",
+  "⚡ PANNE DE CAISSE — encaissement bloqué 90 secondes, la file s'allonge.",
+];
+const COMMANDES = [
+  "2 menus Classique + 1 wrap, SUR PLACE",
+  "1 burger SANS OIGNONS (allergie) + frites, À EMPORTER",
+  "3 menus complets, LIVRAISON — le livreur attend déjà",
+  "1 wrap + 2 boissons, SUR PLACE — client pressé",
+  "4 burgers dont 2 sans fromage, À EMPORTER",
+  "1 menu enfant + 1 menu Classique, SUR PLACE",
+  "2 wraps + 1 grande frite, LIVRAISON",
+  "5 menus pour un groupe, SUR PLACE — ça discute beaucoup",
+];
+const carte = document.getElementById("carte");
+const compteur = document.getElementById("compteur");
+let tirages = 0;
+const piles = { com: [...SITUATIONS], alea: [...ALEAS], cmd: [...COMMANDES] };
+
+function tire(type) {
+  let pile = piles[type];
+  if (!pile.length) {
+    pile = piles[type] = type === "com" ? [...SITUATIONS] : type === "alea" ? [...ALEAS] : [...COMMANDES];
+  }
+  const idx = Math.floor(Math.random() * pile.length);
+  const item = pile.splice(idx, 1)[0];
+  tirages++;
+  let inner = "";
+  if (type === "com") {
+    const [niveau, texte] = item;
+    const label = { vert: "NIVEAU VERT — simple", orange: "NIVEAU ORANGE — tendu", rouge: "NIVEAU ROUGE — difficile" }[niveau];
+    inner = `<div><span class="badge ${niveau}">${label}</span><div>${texte}</div></div>`;
+  } else {
+    inner = `<div><span class="badge alea">${type === "alea" ? "ALÉA INJECTÉ" : "NOUVELLE COMMANDE"}</span><div>${item}</div></div>`;
+  }
+  // petit effet de "battage" avant révélation
+  let n = 0;
+  const shuffle = setInterval(() => {
+    carte.textContent = "· · ·".repeat((n % 3) + 1);
+    if (++n > 5) { clearInterval(shuffle); carte.innerHTML = inner; }
+  }, 90);
+  compteur.textContent = `${tirages} tirage${tirages > 1 ? "s" : ""} — les cartes déjà tirées ne reviennent pas tant que la pile n'est pas épuisée.`;
+}
+document.getElementById("btn-com").addEventListener("click", () => tire("com"));
+document.getElementById("btn-alea").addEventListener("click", () => tire("alea"));
+document.getElementById("btn-cmd").addEventListener("click", () => tire("cmd"));
+</script>
+</body>
+</html>

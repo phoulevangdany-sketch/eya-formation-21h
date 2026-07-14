@@ -1,0 +1,149 @@
+/* Identité EYA — couleurs réelles du logo. Mobile d'abord (usage smartphone en salle). */
+:root {
+  --navy: #182040;
+  --orange: #C85038;
+  --cream: #F4F2ED;
+  --ink: #20222A;
+  --line: #D8D3C8;
+  --ok: #2E7D4F;
+  --ko: #C0392B;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+header {
+  background: var(--navy);
+  color: #fff;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+header img { height: 34px; background: #fff; padding: 3px 6px; border-radius: 4px; }
+header .t { font-size: 15px; font-weight: 700; letter-spacing: 1px; }
+header .s { font-size: 11px; opacity: .65; letter-spacing: 2px; text-transform: uppercase; }
+main { flex: 1; width: 100%; max-width: 720px; margin: 0 auto; padding: 20px 16px 60px; }
+h1 { color: var(--navy); font-size: 26px; letter-spacing: -.5px; margin-bottom: 4px; }
+.sub { color: #6b6f7c; font-size: 14px; margin-bottom: 20px; }
+.rule { width: 64px; height: 4px; background: var(--orange); margin: 12px 0 20px; }
+
+.card {
+  background: #fff;
+  border: 2px solid var(--line);
+  padding: 18px;
+  margin-bottom: 14px;
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+.card:active { transform: scale(.99); }
+.card .k { color: var(--orange); font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+.card .t { color: var(--navy); font-size: 18px; font-weight: 800; margin: 4px 0 4px; }
+.card .d { font-size: 13px; color: #6b6f7c; line-height: 1.45; }
+
+.btn {
+  display: inline-block;
+  background: var(--orange);
+  color: #fff;
+  font-weight: 800;
+  font-size: 16px;
+  padding: 14px 26px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  letter-spacing: .5px;
+}
+.btn.secondary { background: var(--navy); }
+.btn.ghost { background: transparent; color: var(--navy); border: 2px solid var(--navy); }
+.btn:disabled { opacity: .4; }
+.btn:active { transform: scale(.98); }
+
+/* ─── quiz ─── */
+.progress { height: 8px; background: #E4E0D6; margin-bottom: 18px; }
+.progress i { display: block; height: 100%; background: var(--orange); transition: width .3s; }
+.qnum { font-size: 12px; font-weight: 700; letter-spacing: 2px; color: var(--orange); text-transform: uppercase; }
+.qtext { font-size: 19px; font-weight: 700; color: var(--navy); line-height: 1.35; margin: 8px 0 18px; }
+.opt {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: #fff;
+  border: 2px solid var(--line);
+  padding: 14px 16px;
+  font-size: 15px;
+  line-height: 1.4;
+  margin-bottom: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--ink);
+}
+.opt .l { font-weight: 800; color: var(--orange); margin-right: 8px; }
+.opt.good { border-color: var(--ok); background: #EAF5EE; }
+.opt.bad { border-color: var(--ko); background: #FBEAE7; }
+.opt.dim { opacity: .5; }
+.explain {
+  border-left: 6px solid var(--orange);
+  background: #fff;
+  padding: 14px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 14px 0 18px;
+}
+.explain b { color: var(--navy); }
+.score-big { font-size: 64px; font-weight: 800; color: var(--navy); }
+.score-big span { color: var(--orange); }
+
+/* ─── jeux ─── */
+.wheel-card {
+  background: var(--navy);
+  color: #fff;
+  min-height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 26px 22px;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.45;
+  border-bottom: 8px solid var(--orange);
+}
+.wheel-card.flash { animation: none; }
+.badge { display: inline-block; padding: 4px 12px; font-size: 11px; font-weight: 800; letter-spacing: 2px; color: #fff; margin-bottom: 12px; }
+.badge.vert { background: var(--ok); }
+.badge.orange { background: #C87B2E; }
+.badge.rouge { background: var(--ko); }
+.badge.alea { background: var(--orange); }
+
+.team-row { display: flex; align-items: center; gap: 10px; background: #fff; border: 2px solid var(--line); padding: 12px 14px; margin-bottom: 10px; }
+.team-row .name { flex: 1; font-weight: 800; color: var(--navy); font-size: 16px; border: none; background: transparent; font-family: inherit; }
+.team-row .pts { font-size: 26px; font-weight: 800; color: var(--navy); min-width: 56px; text-align: center; }
+.team-row button { width: 44px; height: 44px; font-size: 22px; font-weight: 800; border: 2px solid var(--navy); background: #fff; color: var(--navy); cursor: pointer; }
+.team-row button.plus { background: var(--navy); color: #fff; }
+
+/* ─── mini-jeu rush ─── */
+.rush-timer { height: 10px; background: #E4E0D6; margin: 12px 0; }
+.rush-timer i { display: block; height: 100%; background: var(--orange); }
+.rush-situation {
+  background: var(--navy); color: #fff; padding: 24px 20px;
+  font-size: 18px; font-weight: 700; line-height: 1.45; text-align: center;
+  border-bottom: 8px solid var(--orange); margin-bottom: 16px; min-height: 120px;
+  display: flex; align-items: center; justify-content: center;
+}
+.quad { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.quad button {
+  padding: 18px 10px; font-size: 14px; font-weight: 800; font-family: inherit;
+  border: 2px solid var(--line); background: #fff; color: var(--navy); cursor: pointer; line-height: 1.3;
+}
+.quad button small { display: block; font-weight: 400; font-size: 11px; color: #6b6f7c; margin-top: 4px; }
+.quad button.pick-good { background: #EAF5EE; border-color: var(--ok); }
+.quad button.pick-bad { background: #FBEAE7; border-color: var(--ko); }
+
+footer { text-align: center; font-size: 11px; color: #9aa0ad; padding: 18px; }
+video { width: 100%; background: #000; }

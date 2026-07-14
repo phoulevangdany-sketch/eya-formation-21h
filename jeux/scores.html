@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Tableau des équipes — EYA Formation</title>
+<link rel="stylesheet" href="../assets/eya.css">
+</head>
+<body>
+<header>
+  <img src="../assets/logo_eya.png" alt="EYA Formation">
+  <div><div class="t">Le tableau des équipes</div><div class="s">Score sur les 3 jours</div></div>
+</header>
+<main>
+  <h1 id="mode-titre">Scores</h1>
+  <div class="sub">Projeté par le formateur. Les points restent enregistrés sur cet appareil
+  pendant les 3 jours (aucune donnée n'est envoyée nulle part).</div>
+  <div class="rule"></div>
+
+  <div id="equipes"></div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;">
+    <button class="btn ghost" id="ajouter">+ Ajouter une équipe</button>
+    <button class="btn secondary" id="podium">🏆 Podium</button>
+    <button class="btn ghost" id="reset" style="border-color:#C0392B; color:#C0392B;">Remise à zéro</button>
+  </div>
+
+  <div class="rule" style="margin-top:26px"></div>
+  <div class="sub"><b>Barème conseillé</b> — quiz : 1 pt/bonne réponse (moyenne d'équipe arrondie) ·
+  atelier restitué : 5 pts · défi du formateur : 3 pts · meilleure entraide de la journée : 5 pts.</div>
+</main>
+<footer>Compétition amicale — le formateur reste seul juge des points.</footer>
+<script>
+const KEY = "eya_scores_v1";
+let teams = JSON.parse(localStorage.getItem(KEY) || "null") || [
+  { name: "Équipe 1", pts: 0 },
+  { name: "Équipe 2", pts: 0 },
+];
+const wrap = document.getElementById("equipes");
+const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function save() { localStorage.setItem(KEY, JSON.stringify(teams)); }
+
+function render() {
+  wrap.innerHTML = "";
+  teams.forEach((t, i) => {
+    const row = document.createElement("div");
+    row.className = "team-row";
+    row.innerHTML = `
+      <input class="name" value="${esc(t.name)}" aria-label="Nom de l'équipe">
+      <button class="minus" aria-label="Retirer un point">−</button>
+      <div class="pts">${t.pts}</div>
+      <button class="plus" aria-label="Ajouter un point">+</button>
+    `;
+    row.querySelector(".name").addEventListener("change", (e) => { teams[i].name = e.target.value; save(); });
+    row.querySelector(".plus").addEventListener("click", () => { teams[i].pts++; save(); render(); });
+    row.querySelector(".minus").addEventListener("click", () => { teams[i].pts = Math.max(0, teams[i].pts - 1); save(); render(); });
+    wrap.appendChild(row);
+  });
+}
+
+document.getElementById("ajouter").addEventListener("click", () => {
+  teams.push({ name: `Équipe ${teams.length + 1}`, pts: 0 }); save(); render();
+});
+document.getElementById("reset").addEventListener("click", () => {
+  if (confirm("Remettre tous les scores à zéro ?")) { teams.forEach((t) => (t.pts = 0)); save(); render(); }
+});
+document.getElementById("podium").addEventListener("click", () => {
+  const sorted = [...teams].sort((a, b) => b.pts - a.pts);
+  const medals = ["🥇", "🥈", "🥉"];
+  wrap.innerHTML = sorted.map((t, i) => `
+    <div class="team-row" style="${i === 0 ? "border-color:#C85038; border-width:3px;" : ""}">
+      <div style="font-size:30px; width:48px; text-align:center;">${medals[i] || (i + 1) + "."}</div>
+      <div class="name" style="pointer-events:none">${esc(t.name)}</div>
+      <div class="pts">${t.pts}</div>
+    </div>`).join("");
+  const btn = document.createElement("button");
+  btn.className = "btn"; btn.textContent = "Retour aux scores";
+  btn.addEventListener("click", render);
+  wrap.appendChild(btn);
+});
+render();
+</script>
+</body>
+</html>

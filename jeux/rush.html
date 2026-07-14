@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Tenir le rush — EYA Formation</title>
+<link rel="stylesheet" href="../assets/eya.css">
+</head>
+<body>
+<header>
+  <img src="../assets/logo_eya.png" alt="EYA Formation">
+  <div><div class="t">Tenir le rush</div><div class="s">Urgent ? Important ? Décidez vite.</div></div>
+</header>
+<main id="jeu">
+  <h1>90 secondes de coup de feu</h1>
+  <div class="sub">Les situations s'enchaînent. Pour chacune : classez-la. Le bon réflexe
+  rapporte 2 points, la vitesse un bonus. C'est exactement la matrice de la séquence S1.4 —
+  version chronomètre.</div>
+  <div class="rule"></div>
+  <button class="btn" id="start">▶ Démarrer</button>
+</main>
+<footer>Entraînement individuel — le score n'est enregistré nulle part.</footer>
+<script>
+/* Situations issues des cas réels de la formation (S1.4, S1.7, exercices CHRONO).
+   Réponses : B = je fais maintenant, A = je planifie, D = je délègue/vite, C = je reporte. */
+const SITUATIONS = [
+  ["Un client attend au comptoir, sa commande est prête", "B", "Le client d'abord — remise immédiate."],
+  ["Le sol est mouillé devant la friteuse", "B", "Sécurité : ça passe devant tout, tout de suite."],
+  ["Commander les emballages pour la semaine prochaine", "A", "Important mais pas urgent : je planifie."],
+  ["Le téléphone sonne pendant que tu montes une commande", "D", "Urgent mais pas important : je délègue ou je fais vite."],
+  ["Trier la réserve qui est en désordre", "C", "Ni urgent ni important en plein rush : je reporte."],
+  ["Une commande erronée revient du comptoir", "B", "Erreur client = urgent ET important."],
+  ["Le livreur attend une commande presque prête", "D", "Vite fait ou délégué — sans casser ta priorité."],
+  ["Préparer la mise en place de demain", "A", "Important, pas urgent : planifié en fin de service."],
+  ["Nettoyer la vitre de la porte d'entrée", "C", "Reporté — jamais bâclé, reporté."],
+  ["Plus de steaks au frais pour tenir le service", "B", "Rupture imminente : décision immédiate."],
+  ["Un collègue demande de l'aide, son poste déborde", "B", "L'équipe qui décroche = le service qui décroche."],
+  ["Répondre à un avis client sur internet", "A", "Important pour l'image, mais pas pendant le rush."],
+  ["La poubelle du poste est pleine", "D", "Rapide ou délégué : ça ne doit pas bloquer le poste."],
+  ["Un fournisseur appelle pour proposer un nouveau produit", "C", "Ni urgent ni important maintenant : je reporte."],
+  ["L'écran de commandes affiche 12 tickets en attente", "B", "Priorisation immédiate : c'est le cœur du rush."],
+  ["Changer l'affiche promotionnelle de la vitrine", "C", "Après le service."],
+  ["Le four affiche une alarme de température", "B", "Matériel + sécurité alimentaire : maintenant."],
+  ["Ranger la livraison de boissons qui vient d'arriver", "D", "Déléguée ou différée en fin de pointe si possible."],
+];
+const LABELS = {
+  B: ["🔥 JE FAIS MAINTENANT", "urgent ET important"],
+  D: ["🤝 JE DÉLÈGUE / VITE", "urgent, pas important"],
+  A: ["🗓️ JE PLANIFIE", "important, pas urgent"],
+  C: ["⏸️ JE REPORTE", "ni urgent, ni important"],
+};
+const DUREE = 90;
+const PAR_QUESTION = 10;
+const main = document.getElementById("jeu");
+let deck, score, bonnes, total, tGlobal, tQuestion, timerG, timerQ, enCours;
+
+document.getElementById("start").addEventListener("click", demarrer);
+
+function demarrer() {
+  deck = [...SITUATIONS].sort(() => Math.random() - 0.5);
+  score = 0; bonnes = 0; total = 0; tGlobal = DUREE;
+  timerG = setInterval(() => {
+    tGlobal--;
+    const bar = document.getElementById("gbar");
+    if (bar) bar.style.width = (tGlobal / DUREE * 100) + "%";
+    const lbl = document.getElementById("glbl");
+    if (lbl) lbl.textContent = tGlobal + " s";
+    if (tGlobal <= 0) fin();
+  }, 1000);
+  question();
+}
+
+function question() {
+  if (!deck.length) { fin(); return; }
+  enCours = deck.pop();
+  total++;
+  tQuestion = PAR_QUESTION;
+  clearInterval(timerQ);
+  main.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="qnum">Situation ${total}</div>
+      <div class="qnum" id="glbl">${tGlobal} s</div>
+    </div>
+    <div class="rush-timer"><i id="gbar" style="width:${tGlobal / DUREE * 100}%"></i></div>
+    <div class="rush-situation">${enCours[0]}</div>
+    <div class="rush-timer"><i id="qbar" style="width:100%; background:#182040;"></i></div>
+    <div class="quad">
+      <button data-r="B">🔥 JE FAIS MAINTENANT<small>urgent ET important</small></button>
+      <button data-r="D">🤝 JE DÉLÈGUE / VITE<small>urgent, pas important</small></button>
+      <button data-r="A">🗓️ JE PLANIFIE<small>important, pas urgent</small></button>
+      <button data-r="C">⏸️ JE REPORTE<small>ni urgent, ni important</small></button>
+    </div>
+    <div id="fb" style="margin-top:12px"></div>
+  `;
+  document.querySelectorAll(".quad button").forEach((b) =>
+    b.addEventListener("click", () => repondre(b.dataset.r, b)));
+  timerQ = setInterval(() => {
+    tQuestion--;
+    const q = document.getElementById("qbar");
+    if (q) q.style.width = (tQuestion / PAR_QUESTION * 100) + "%";
+    if (tQuestion <= 0) { clearInterval(timerQ); troplent(); }
+  }, 1000);
+}
+
+function repondre(r, btn) {
+  clearInterval(timerQ);
+  const [attendu, , explication] = [enCours[1], null, enCours[2]];
+  const ok = r === attendu;
+  if (ok) { score += 2 + (tQuestion >= 7 ? 1 : 0); bonnes++; }
+  document.querySelectorAll(".quad button").forEach((b) => {
+    if (b.dataset.r === attendu) b.classList.add("pick-good");
+    else if (b === btn && !ok) b.classList.add("pick-bad");
+    b.disabled = true;
+  });
+  document.getElementById("fb").innerHTML = `
+    <div class="explain"><b>${ok ? "✔ +" + (2 + (tQuestion >= 7 ? 1 : 0)) + " pts" + (tQuestion >= 7 ? " (bonus vitesse)" : "") : "✘ C'était : " + LABELS[attendu][0]}</b>
+    ${explication}</div>`;
+  setTimeout(question, 1600);
+}
+
+function troplent() {
+  document.querySelectorAll(".quad button").forEach((b) => {
+    if (b.dataset.r === enCours[1]) b.classList.add("pick-good");
+    b.disabled = true;
+  });
+  document.getElementById("fb").innerHTML = `
+    <div class="explain"><b>⏱ Trop tard — en rush, ne pas décider, c'est décider.</b> ${enCours[2]}</div>`;
+  setTimeout(question, 1600);
+}
+
+function fin() {
+  clearInterval(timerG); clearInterval(timerQ);
+  const pct = total ? Math.round((bonnes / total) * 100) : 0;
+  let msg;
+  if (pct >= 80) msg = "Réflexes de responsable de service. La matrice est ancrée.";
+  else if (pct >= 60) msg = "Bonne base — revoyez les cas « je reporte » vs « je délègue », c'est là que ça se joue.";
+  else msg = "Rejouez une partie après avoir revu la matrice (slide S1.4) : deux questions, urgent ? important ?";
+  main.innerHTML = `
+    <div class="qnum">Fin de la partie</div>
+    <div class="score-big">${score}<span> pts</span></div>
+    <div class="qtext">${bonnes}/${total} bons réflexes (${pct} %)</div>
+    <div class="explain">${msg}</div>
+    <button class="btn" onclick="location.reload()">Rejouer</button>
+    <a class="btn ghost" style="margin-left:10px" href="../index.html">Accueil</a>
+  `;
+}
+</script>
+</body>
+</html>

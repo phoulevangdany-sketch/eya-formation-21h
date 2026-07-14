@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Vidéos — EYA Formation</title>
+<link rel="stylesheet" href="../assets/eya.css">
+</head>
+<body>
+<header>
+  <img src="../assets/logo_eya.png" alt="EYA Formation">
+  <div><div class="t">Les 6 vidéos</div><div class="s">Performance opérationnelle · 21 h</div></div>
+</header>
+<main>
+  <h1>Vidéos de la formation</h1>
+  <div class="sub">À revoir à volonté. Chaque vidéo dure environ 2 minutes.</div>
+  <div class="rule"></div>
+  <div id="list"></div>
+</main>
+<footer>EYA FORMATION, nom commercial d'Académie Marvelous</footer>
+<script>
+const VIDEOS = [
+  [1, "Préparer efficacement l'ouverture", "S1.3 · Jour 1"],
+  [2, "Organiser un rush", "S1.6 · Jour 1"],
+  [3, "Transmettre une consigne claire", "S2.2 · Jour 2"],
+  [4, "Gérer une réclamation client", "S2.6 · Jour 2"],
+  [5, "Respecter les portions et limiter les pertes", "S3.2 · Jour 3"],
+  [6, "Réaliser un inventaire simple", "S3.6 · Jour 3"],
+];
+document.getElementById("list").innerHTML = VIDEOS.map(([n, t, s]) => `
+  <div class="card">
+    <div class="k">Vidéo ${n} · ${s}</div>
+    <div class="t">${t}</div>
+    <video controls preload="none" src="EYA_V${n}.mp4" style="margin-top:10px"></video>
+  </div>`).join("");
+</script>
+</body>
+</html>
