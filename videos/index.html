@@ -29,11 +29,16 @@ const VIDEOS = [
   [6, "Réaliser un inventaire simple", "S3.6 · Jour 3"],
 ];
 document.getElementById("list").innerHTML = VIDEOS.map(([n, t, s]) => `
-  <div class="card">
+  <div class="card" id="v${n}">
     <div class="k">Vidéo ${n} · ${s}</div>
     <div class="t">${t}</div>
     <video controls preload="none" src="EYA_V${n}.mp4" style="margin-top:10px"></video>
   </div>`).join("");
+// défilement direct si l'URL contient une ancre (#v3) — arrivée par QR code
+if (location.hash) {
+  const cible = document.querySelector(location.hash);
+  if (cible) setTimeout(() => cible.scrollIntoView({ behavior: "smooth" }), 150);
+}
 </script>
 </body>
 </html>
